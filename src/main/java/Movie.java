@@ -1,5 +1,6 @@
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import exceptions.MovieNotFoundException;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -16,6 +17,8 @@ public class Movie {
     /* Movie information such as actors, writers, directors,
     imdbvotes, rating, runtime , rated, plot , language, country and genre.
     **/
+    @JsonProperty("Response")
+    String response;
     @JsonProperty("Released")
     String released;
     @JsonProperty("Awards")
@@ -100,7 +103,7 @@ public class Movie {
         this.imdbVotes = String.valueOf(ImdbVotes);
     }
 
-    public Movie(String name) {
+    public Movie(String name) throws MovieNotFoundException {
         Movie movie = Utils.getMoviesMapper(getMovieData(name));
         if (movie != null) {
             title = movie.title;
@@ -123,7 +126,7 @@ public class Movie {
             director = movie.director;
             directors = List.of(director.split(","));
         }
-        if (!actorsList.isEmpty()) {
+        if (actorsList != null && !actorsList.isEmpty()) {
             actor = new Actors(actorsList.get(0));
         }
     }
@@ -139,25 +142,26 @@ public class Movie {
      * @return a string representation of the MovieData, or null if an error occurred
      */
 
-    public String getMovieData(String title) {
+    public String getMovieData(String title) throws MovieNotFoundException {
+        StringBuilder stringBuilder;
         try {
             URL url = new URL("https://www.omdbapi.com/?t=" + title + "&apikey=" + API_KEY);
             URLConnection Url = url.openConnection();
             Url.setRequestProperty("Authorization", "Key" + API_KEY);
             BufferedReader reader = new BufferedReader(new InputStreamReader(Url.getInputStream()));
             String line;
-            StringBuilder stringBuilder = new StringBuilder();
+
+            stringBuilder = new StringBuilder();
             while ((line = reader.readLine()) != null) {
                 stringBuilder.append(line);
             }
             reader.close();
-            //handle an error if the chosen movie is not found
             return stringBuilder.toString();
+            //handle an error if the chosen movie is not found
         } catch (IOException e) {
-            System.err.println("Error: Movie Was Not Found! Please Try Again...");
+            System.err.println("Error: " + e.getMessage());
             return "";
         }
-
     }
 
     public int getImdbVotesViaApi(String moviesInfoJson) {
@@ -209,10 +213,12 @@ public class Movie {
         Movie movie = Utils.getMoviesMapper(movieInfoJson);
         return movie == null || movie.language == null ? "" : movie.language;
     }
+
     public String getTitleViaApi(String movieInfoJson) {
         Movie movie = Utils.getMoviesMapper(movieInfoJson);
         return movie == null || movie.title == null ? "" : movie.title;
     }
+
     public String getCountryViaApi(String movieInfoJson) {
         Movie movie = Utils.getMoviesMapper(movieInfoJson);
         return movie == null || movie.country == null ? "" : movie.country;

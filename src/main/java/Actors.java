@@ -1,5 +1,6 @@
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import exceptions.ActorsNotFoundException;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -68,7 +69,7 @@ public class Actors {
      * @param name for which Actor should be retrieved
      * @return a string representation of the Actors info or null if an error occurred
      */
-    public String getActorData(String name) {
+    public String getActorData(String name) throws ActorsNotFoundException {
         try {
             URL url = new URL("https://api.api-ninjas.com/v1/celebrity?name=" +
                     name.replace(" ", "+") + "&apikey=" + API_KEY);

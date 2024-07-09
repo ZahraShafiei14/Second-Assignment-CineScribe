@@ -1,26 +1,78 @@
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import exceptions.ActorsNotFoundException;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.URL;
 import java.net.HttpURLConnection;
-public class Actors {
-    public static final String API_KEY = "Your API_KEY";   // TODO --> add your api key about Actors here
-    String netWorth;
-    Boolean isAlive;
+import java.net.URL;
 
-    public Actors(String netWorth, boolean isAlive){
-        //TODO --> (Write a proper constructor using the get_from_api functions)
+@JsonIgnoreProperties
+public class Actors {
+    public static final String API_KEY = "x0ci3kSFy4JSMDv6eYsK5gssHrrSpDWZHUGRsyow";
+    /* Actor information such as name, net_worth, gender, nationality
+     height, birthday or death.
+     **/
+    @JsonProperty("name")
+    String name;
+    @JsonProperty("net_worth")
+    double netWorth;
+    @JsonProperty(value = "is_alive")
+    Boolean isAlive;
+    @JsonProperty(value = "death")
+    String dateOfDeath;
+    @JsonProperty("gender")
+    String gender;
+    @JsonProperty("nationality")
+    String nationality;
+    @JsonProperty("height")
+    double height;
+    @JsonProperty("birthday")
+    String birthday;
+
+    public Actors(String netWorth, boolean isAlive) {
+        this.netWorth = netWorth.isEmpty() ? 0.0 : Double.parseDouble(netWorth);
+        this.isAlive = isAlive;
     }
+
+    public Actors(double netWorth, Boolean isAlive, String dateOfDeath, String gender, String nationality, double height, String birthday) {
+        this.netWorth = netWorth;
+        this.isAlive = isAlive;
+        this.dateOfDeath = dateOfDeath;
+        this.gender = gender;
+        this.nationality = nationality;
+        this.height = height;
+        this.birthday = birthday;
+    }
+
+    public Actors(String name) {
+        Actors actor = Utils.getActorsMapper(getActorData(name));
+        if (actor != null) {
+            this.name = actor.name;
+            netWorth = actor.netWorth;
+            isAlive = actor.isAlive;
+            dateOfDeath = actor.dateOfDeath;
+            gender = actor.gender;
+            nationality = actor.nationality;
+            height = actor.height;
+            birthday = actor.birthday;
+        }
+    }
+
+    public Actors() {
+    }
+
     @SuppressWarnings({"deprecation"})
     /**
      * Retrieves data for the specified actor.
      * @param name for which Actor should be retrieved
      * @return a string representation of the Actors info or null if an error occurred
      */
-    public String getActorData(String name) {
+    public String getActorData(String name) throws ActorsNotFoundException {
         try {
-            URL url = new URL("https://api.api-ninjas.com/v1/celebrity?name="+
-                    name.replace(" ", "+")+"&apikey="+API_KEY);
+            URL url = new URL("https://api.api-ninjas.com/v1/celebrity?name=" +
+                    name.replace(" ", "+") + "&apikey=" + API_KEY);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestProperty("X-Api-Key", API_KEY);
             System.out.println(connection);
@@ -43,22 +95,44 @@ public class Actors {
             return null;
         }
     }
-    public double getNetWorthViaApi(String actorsInfoJson){
-        //TODO --> (This function must return the "NetWorth")
-        double result = 0.0;
-        return result;
+
+    public double getNetWorthViaApi(String actorsInfoJson) {
+        Actors actor = Utils.getActorsMapper(actorsInfoJson);
+        return actor != null ? actor.netWorth : 0.0;
     }
 
-    public boolean isAlive(String actorsInfoJson){
-        //TODO --> (If your chosen actor is alive it must return true otherwise it must return false)
-        boolean statues = false;
-        return statues;
+    public double getHeightViaApi(String actorsInfoJson) {
+        Actors actor = Utils.getActorsMapper(actorsInfoJson);
+        return actor != null ? actor.height : 0.0;
     }
 
-    public String getDateOfDeathViaApi(String actorsInfoJson){
-        //TODO --> (If your chosen actor is deceased it must return the date of death)  -->
-        String date = "";
-        return date;
+    public boolean isAlive(String actorsInfoJson) {
+        Actors actor = Utils.getActorsMapper(actorsInfoJson);
+        return actor == null || actor.isAlive != null && actor.isAlive;
     }
 
+    public String getDateOfDeathViaApi(String actorsInfoJson) {
+        Actors actor = Utils.getActorsMapper(actorsInfoJson);
+        return actor == null || actor.dateOfDeath == null ? "" : actor.dateOfDeath;
+    }
+
+    public String getNameViaApi(String actorsInfoJson) {
+        Actors actor = Utils.getActorsMapper(actorsInfoJson);
+        return actor == null || actor.name == null ? "" : actor.name;
+    }
+
+    public String getGenderViaApi(String actorsInfoJson) {
+        Actors actor = Utils.getActorsMapper(actorsInfoJson);
+        return actor == null || actor.gender == null ? "" : actor.gender;
+    }
+
+    public String getBirthdayViaApi(String actorsInfoJson) {
+        Actors actor = Utils.getActorsMapper(actorsInfoJson);
+        return actor == null || actor.birthday == null ? "" : actor.birthday;
+    }
+
+    public String getNationalityViaApi(String actorsInfoJson) {
+        Actors actor = Utils.getActorsMapper(actorsInfoJson);
+        return actor == null || actor.nationality == null ? "" : actor.nationality;
+    }
 }
